@@ -1,7 +1,7 @@
 # Tauto — Telegram Auto Poster
 
 Electron port of the Python Telethon-based auto-poster. Same behavior model
-(human-simulation reads, mark-as-read, weighted delays, revisits) but with a
+(human-simulation) but with a
 proper UI and multi-account session management.
 
 ## Stack
