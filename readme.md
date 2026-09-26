@@ -2,7 +2,7 @@
 
 A desktop app for scheduled, automated posting to Telegram groups across multiple accounts. Built for founders, community managers, and marketers who need to keep messages going out without babysitting the send button.
 
-![Tauto Dashboard](assets/screenshot-dashboard.png)
+![Tauto Dashboard](screenshot-dashboard.png)
 
 ---
 
