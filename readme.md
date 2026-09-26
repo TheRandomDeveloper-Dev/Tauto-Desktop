@@ -1,118 +1,68 @@
 # Tauto — Telegram Auto Poster
 
-Electron port of the Python Telethon-based auto-poster. Same behavior model
-(human-simulation) but with a
-proper UI and multi-account session management.
+A desktop app for scheduled, automated posting to Telegram groups across multiple accounts. Built for founders, community managers, and marketers who need to keep messages going out without babysitting the send button.
 
-## Stack
+![Tauto Dashboard](assets/screenshot-dashboard.png)
 
-- Electron 32 (main + preload + renderer, context-isolated)
-- [GramJS](https://github.com/gram-js/gramjs) (`telegram` npm package) — the
-  Node.js equivalent of Telethon
-- `qrcode` for on-screen QR generation
+---
 
-## Install & run
+## What it does
 
-```bash
-cd tauto
-npm install
-npm start
-```
+- **Multi-account support** — log in with as many Telegram accounts as you need (QR code or phone OTP)
+- **Reusable message templates** — text or photo-with-caption, Markdown supported
+- **Group management** — fetch all your groups in one click, pick which ones to post to, assign templates per group
+- **Forum topic support** — post directly into specific topic threads in supergroups
+- **Human-like sending** — randomized delays, read receipts, and browsing behavior to keep accounts healthy
+- **Live logs and stats** — watch sends, skips, and failures in real time
+- **Runs in your background** — start it and forget it; stop anytime
 
-Dev mode (opens DevTools):
+---
 
-```bash
-npm run dev
-```
+## Download
 
-Build installers:
+Grab the latest installer from the [Releases](../../releases) page.
 
-```bash
-npm run build:win     # NSIS installer
-npm run build:mac     # DMG
-npm run build:linux   # AppImage
-```
+Available for **Windows** (`.exe` installer).
+macOS and Linux builds coming soon.
 
-## First-run flow
+---
 
-1. **Settings → Telegram API credentials.** Optional. Leave blank to use the
-   bundled fallback (`API_ID = 33727858`, `API_HASH = 435e2b…4bb0e`). If you
-   provide your own from `my.telegram.org`, they take precedence and are used
-   for every subsequent session.
-2. **Accounts → Add account.** QR (recommended) or phone code, both with 2FA
-   support. Session strings are saved as `<phone>.session` under the OS user
-   data directory (`%APPDATA%/Tauto/sessions` on Windows,
-   `~/Library/Application Support/Tauto/sessions` on macOS,
-   `~/.config/Tauto/sessions` on Linux).
-3. **Messages.** Create named templates. Each has a type (`text` or `photo`),
-   Markdown body/caption, and an image path/URL for `photo` templates.
-4. **Groups → Fetch from Telegram.** Loads every supergroup + legacy chat the
-   active account is in. For each group: tick to enable, pick a template, set
-   a topic ID if the group is a forum. Click **Save selection** to persist.
-5. **Auto Post → Start.** Runs the loop. Stop is honored between actions.
+## Getting started
 
-## Config file
+1. **Install** Tauto using the installer.
+2. **(Optional but recommended)** Add your own Telegram API ID and Hash from [my.telegram.org](https://my.telegram.org) — this reduces account limitations significantly compared to the bundled credentials.
+3. **Add an account** — scan the QR code with your Telegram mobile app, or use phone + OTP.
+4. **Create message templates** — write the messages you want to post, name them, and save.
+5. **Fetch your groups** — one click pulls in every group your account can post to.
+6. **Assign templates** — pick which template goes to which group, enable the ones you want, save.
+7. **Hit Start** on the Auto Post screen.
 
-Everything except sessions lives in `<userData>/config.json`. Safe to edit by
-hand; the app reloads it on start.
+---
 
-```json
-{
-  "apiId": "",
-  "apiHash": "",
-  "accessCheckDisabled": false,
-  "messages": {
-    "default": { "type": "text", "text": "Hello 👋 from Tauto." }
-  },
-  "groups": {
-    "-1001234567890": { "name": "My Group", "type": "default", "topic": null }
-  },
-  "posterDefaults": {
-    "shortDelayMin": 20, "shortDelayMax": 60,
-    "mediumDelayMin": 60, "mediumDelayMax": 180,
-    "longDelayMin": 300, "longDelayMax": 600,
-    "shortWeight": 0.6, "mediumWeight": 0.3,
-    "revisitProbability": 0.25,
-    "humanBehavior": true,
-    "shuffle": true
-  }
-}
-```
+## Why Tauto
 
-## Access gate
+Most Telegram automation tools are either sketchy web services that ask for your session string, or complicated Python scripts you have to babysit. Tauto is a native desktop app — your sessions never leave your computer, and it's built to be usable by anyone, not just developers.
 
-The original script pings a GitHub raw file for an `allowed_to_jay` marker.
-That's preserved in `src/access.js`. Two ways to bypass:
+---
 
-- Toggle **Settings → Access gate → Disable remote access check**, or
-- Set `"accessCheckDisabled": true` in `config.json`, or
-- Delete `src/access.js` and the `access:check` handler in `main.js` if you
-  don't want it in the app at all.
+## Terms of use
 
-## Behavior parity with the Python version
+By using Tauto, you agree that:
 
-| Python                                      | Tauto                                          |
-|---------------------------------------------|------------------------------------------------|
-| `TelegramClient` (Telethon)                 | `TelegramClient` (GramJS)                      |
-| `qr_login()` + ASCII QR in terminal         | `signInUserWithQrCode` + PNG QR in modal       |
-| `client.start(phone=...)`                   | `client.start({ phoneNumber, phoneCode, ... })`|
-| `get_dialogs()` → `Channel(megagroup)`/`Chat` | `getDialogs()` with same classification      |
-| `send_message` / `send_file` with markdown  | `sendMessage` / `sendFile` `parseMode: "md"`   |
-| `send_read_acknowledge`                     | `markAsRead`                                   |
-| `human_behavior()` — read+idle+mark         | Identical, `src/telegram-service.js`           |
-| Weighted delay 60/30/10                     | `AutoPoster._pickDelay()`                      |
-| 25% revisit chance                          | `revisitProbability` in settings               |
-| `messages.py` sibling file                  | In-app template editor persisted to config     |
-| `groups.json`                               | In-app groups table persisted to config        |
-| `logs.txt` next to the script               | `<userData>/logs.txt` + live pane in UI        |
+- You are responsible for how you use this software
+- You will comply with Telegram's Terms of Service and all applicable laws
+- The developers are not liable for account restrictions, bans, or any consequences of misuse
+- Any illegal, abusive, or policy-violating use is solely the user's responsibility
 
-## Notes
+---
 
-- **Sessions are portable.** Copy a `.session` file between machines and it
-  logs in as that account, no code needed.
-- **`markAsRead` failures are swallowed** — some groups refuse it, matching
-  the Python `try/except: pass` behavior.
-- The renderer never sees API credentials or session strings directly; all
-  Telegram calls happen in the main process behind IPC.
-- CSP is set to `default-src 'self'` with `data:` allowed for images so QR
-  PNGs render inline without exposing renderer to network.
+## Support
+
+- **Bug reports and feature requests:** [Open an issue](https://t.me/TheRandomDeveloper)
+- **General questions:** [Discussions](https://t.me/TheRandomDeveloper)
+
+---
+
+## Built by
+
+[TheRandomDev](https://t.me/TheRandomDeveloper) — a small team building tools for the automation and proxy community.
